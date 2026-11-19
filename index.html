@@ -102,7 +102,7 @@ const dt=s=>{const p=s.split('-');return p.length===3?p[2]+' '+MON[+p[1]-1]+' '+
 const held=n=>n<365?Math.max(1,Math.round(n/30.4))+' mo':(n/365).toFixed(1)+' yr';
 const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0);
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
-let PRICES=new Map(),liveOk=false,H=[],LP=[],loadedAt=null;
+let PRICES=new Map(),liveOk=false,lastErr='',H=[],LP=[],loadedAt=null;
 const st={p:'30',q:'',key:'pl',dir:1,lot:'',term:''};
 
 function parseCSV(t){const rows=[];let r=[],c='',q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++;}else q=false;}else c+=ch;}else if(ch==='"')q=true;else if(ch===','){r.push(c);c='';}else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;r.push(c);rows.push(r);r=[];c='';}else c+=ch;}if(c!==''||r.length){r.push(c);rows.push(r);}return rows;}
@@ -130,7 +130,7 @@ async function loadPrices(){
     rows.slice(1).forEach(r=>{const nm=r[ix('Share')];if(!nm)return;m.set(nm.trim(),{live:num(r[ix('Live price')]),src:(r[ix('Price source')]||'').trim(),p7:num(r[ix('Close 7d ago')]),p30:num(r[ix('Close 30d ago')]),p60:num(r[ix('Close 60d ago')]),p90:num(r[ix('Close 90d ago')])});});
     if(!m.size)throw new Error('no rows');
     PRICES=m;liveOk=true;
-  }catch(e){PRICES=new Map();liveOk=false;}
+  }catch(e){PRICES=new Map();liveOk=false;lastErr=(e&&e.message)||String(e);}
   loadedAt=new Date();
   compute();render();
 }
@@ -162,7 +162,7 @@ function render(){
   const T={cost:sum(H,h=>h.cost),value:sum(H,h=>h.value)};T.pl=T.value-T.cost;
   const lt=sum(H,h=>h.lt_pl),stp=sum(H,h=>h.st_pl),gain=H.filter(h=>h.pl>0).length,loss=H.filter(h=>h.pl<0).length,fresh=H.filter(h=>h.asof==='Live').length,stale=H.length-fresh;
   $('banner').replaceChildren();
-  if(!liveOk){$('banner').append(el('div','banner','Live prices could not be loaded, so this page is showing the last saved prices. Check your internet and press Refresh prices.'));}
+  if(!liveOk){$('banner').append(el('div','banner','Live prices could not be loaded, so this page is showing the last saved prices. Check your internet and press Refresh prices. (Reason: '+lastErr+' · page version 4)'));}
   const tk=$('takeaway');tk.replaceChildren('The portfolio is ',el('b','',T.pl>=0?'up':'down'),' ',el('b','',inr(Math.abs(T.pl))),' (',el('b','',pc(Math.abs(T.pl/T.cost))),') on ',el('b','',inr(T.cost)),' invested: ',el('b','',gain),' shares are in profit and ',el('b','',loss),' are in loss.');
   $('stamp').textContent=loadedAt?'Prices loaded at '+loadedAt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'';
   const cards=[['Invested',inr(T.cost),''],['Current value',inr(T.value),''],['Net profit / loss',inr(T.pl),cls(T.pl)],['Profit / loss %',pc(T.pl/T.cost),cls(T.pl)],['Long-term profit / loss',inr(lt),cls(lt)],['Short-term profit / loss',inr(stp),cls(stp)]];
