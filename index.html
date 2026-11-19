@@ -108,16 +108,26 @@ const st={p:'30',q:'',key:'pl',dir:1,lot:'',term:''};
 function parseCSV(t){const rows=[];let r=[],c='',q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++;}else q=false;}else c+=ch;}else if(ch==='"')q=true;else if(ch===','){r.push(c);c='';}else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;r.push(c);rows.push(r);r=[];c='';}else c+=ch;}if(c!==''||r.length){r.push(c);rows.push(r);}return rows;}
 const num=x=>{const n=parseFloat(String(x==null?'':x).replace(/,/g,''));return isNaN(n)?null:n;};
 
+function fetchSheet(){return new Promise((res,rej)=>{
+  const cb='__gv'+Date.now();const s=document.createElement('script');
+  const done=()=>{clearTimeout(to);delete window[cb];s.remove();};
+  const to=setTimeout(()=>{done();rej(new Error('timeout'));},20000);
+  window[cb]=d=>{done();res(d);};
+  s.onerror=()=>{done();rej(new Error('script'));};
+  s.src='https://docs.google.com/spreadsheets/d/'+SHEET+'/gviz/tq?headers=1&sheet=Sheet1&tqx=out:json;responseHandler:'+cb;
+  document.head.append(s);
+});}
 async function loadPrices(){
   try{
-    const url='https://docs.google.com/spreadsheets/d/'+SHEET+'/gviz/tq?tqx=out:csv&sheet=Sheet1&_='+Date.now();
-    const res=await fetch(url,{cache:'no-store'});
-    if(!res.ok)throw new Error('http '+res.status);
-    const rows=parseCSV(await res.text());
-    if(rows.length<2)throw new Error('empty');
-    const h=rows[0].map(s=>s.trim());const ix=n=>h.indexOf(n);
+    const d=await fetchSheet();
+    if(!d||d.status==='error'||!d.table)throw new Error('bad response');
+    let cols=d.table.cols.map(c=>String(c.label||'').trim());
+    let rows=d.table.rows.map(r=>r.c.map(x=>x?x.v:null));
+    if(!cols.includes('Share')){cols=(rows[0]||[]).map(x=>String(x==null?'':x).trim());rows=rows.slice(1);}
+    const ix=n=>cols.indexOf(n);
+    if(ix('Share')<0)throw new Error('no Share column');
     const m=new Map();
-    rows.slice(1).forEach(r=>{if(!r[ix('Share')])return;m.set(r[ix('Share')].trim(),{live:num(r[ix('Live price')]),src:(r[ix('Price source')]||'').trim(),p7:num(r[ix('Close 7d ago')]),p30:num(r[ix('Close 30d ago')]),p60:num(r[ix('Close 60d ago')]),p90:num(r[ix('Close 90d ago')])});});
+    rows.forEach(r=>{const nm=r[ix('Share')];if(!nm)return;m.set(String(nm).trim(),{live:num(r[ix('Live price')]),src:String(r[ix('Price source')]||'').trim(),p7:num(r[ix('Close 7d ago')]),p30:num(r[ix('Close 30d ago')]),p60:num(r[ix('Close 60d ago')]),p90:num(r[ix('Close 90d ago')])});});
     if(!m.size)throw new Error('no rows');
     PRICES=m;liveOk=true;
   }catch(e){PRICES=new Map();liveOk=false;}
