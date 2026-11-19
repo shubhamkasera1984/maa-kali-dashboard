@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Maa Kali portfolio</title>
+<style>
+:root{--bg:#faf9f5;--panel:#fff;--fg:#1f1e1d;--mut:#6b6a68;--line:#e6e3da;--ok:#1a7f4b;--bad:#c0392b;--warn:#b7791f;--bar:#d9d5c8}
+@media(prefers-color-scheme:dark){:root{--bg:#1f1e1d;--panel:#2a2927;--fg:#f0eee6;--mut:#a3a19b;--line:#3b3936;--ok:#4cc38a;--bad:#ff7b6b;--warn:#e6b450;--bar:#4a4843}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-text-size-adjust:100%}
+.pf{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+h1{font:400 30px/1.2 Georgia,"Times New Roman",serif;margin:0 0 8px}
+h2{font-size:18px;font-weight:600;margin:34px 0 4px}
+h3{font-size:15px;font-weight:600;margin:20px 0 6px}
+.sub{color:var(--mut);margin:0 0 18px}.sub b{color:var(--fg)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.lbl{font-size:12px;color:var(--mut)}
+.big{font:400 26px/1.2 Georgia,serif;margin-top:4px;font-variant-numeric:tabular-nums}
+.mid{font:400 20px/1.3 Georgia,serif;margin-top:4px}
+.note{font-size:12.5px;color:var(--mut);margin:6px 0 0;line-height:1.5}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
+input,select,button{font:inherit;font-size:14px;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+button{cursor:pointer}
+.scroll{overflow-x:auto;margin-top:8px;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:left}
+th{color:var(--mut);font-weight:600;cursor:pointer;user-select:none}
+.r{text-align:right}
+th:first-child,td:first-child{position:sticky;left:0;background:var(--bg)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin-top:16px}
+.two h3{margin-top:0}
+.row{display:grid;grid-template-columns:minmax(90px,34%) 1fr minmax(100px,auto);gap:8px;align-items:center;font-size:12.5px;padding:3px 0}
+.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr{position:relative;height:14px}
+.zero{position:absolute;top:0;bottom:0;width:1px;background:var(--mut);opacity:.6}
+.bar{position:absolute;top:2px;bottom:2px;border-radius:2px}
+.bar.g{background:var(--ok)}.bar.l{background:var(--bad)}
+.val{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.val small{color:var(--mut);margin-left:4px}
+.banner{background:var(--panel);border:1px solid var(--warn);border-radius:8px;padding:8px 12px;margin:0 0 14px;font-size:13px;color:var(--warn)}
+details{margin-top:28px}summary{cursor:pointer}
+</style>
+</head>
+<body>
+<div class="pf">
+<h1>Maa Kali portfolio</h1>
+<div id="banner"></div>
+<p class="sub" id="takeaway">Loading prices…</p>
+<div class="ctl"><button id="refresh">Refresh prices</button><span class="note" id="stamp"></span></div>
+<div class="cards" id="cards" style="margin-top:14px"></div>
+<p class="note">Long term means held for more than 12 months and short term means 12 months or less, counted from each purchase date to today. Bonus and demerger shares are dated by the allotment date in your sheet, and their holding period for tax can differ.</p>
+<p class="note" id="livenote"></p>
+
+<h2>How the portfolio moved 📈</h2>
+<p class="note">The value of what you hold today, compared with the same shares at their closing price a week, a month, 2 months and 3 months ago. It covers the shares that have a live quote and ignores any buying or selling in between.</p>
+<div id="perf" style="margin-top:10px"></div>
+
+<h2>Movers and shakers 🎢</h2>
+<p class="note">How each share's price moved over the period you pick. Shares with no live quote are left out.</p>
+<div class="ctl"><select id="persel"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="60">Last 60 days</option><option value="90">Last 90 days</option></select></div>
+<div id="movers" style="margin-top:10px"></div>
+
+<h2>Profit / loss by share</h2>
+<p class="note">Largest profit first. The figure on the right is the profit or loss in rupees and as a percentage of cost.</p>
+<div id="plchart"></div>
+
+<h2>All holdings</h2>
+<div class="ctl"><input id="hq" type="search" placeholder="Search a share" aria-label="Search a share"></div>
+<div class="scroll"><table><thead><tr id="hhead"></tr></thead><tbody id="hbody"></tbody></table></div>
+
+<h2>Every purchase</h2>
+<p class="note">Each purchase is valued at today's price and marked long or short term.</p>
+<div class="ctl"><select id="lotsel" aria-label="Choose a share"></select>
+<select id="termsel" aria-label="Choose a term"><option value="">Long and short term</option><option value="Long">Long term only</option><option value="Short">Short term only</option></select></div>
+<div class="scroll"><table><thead><tr><th>Bought on</th><th>Share</th><th class="r">Held</th><th>Term</th><th class="r">Qty</th><th class="r">Buy price</th><th class="r">Cost (₹)</th><th class="r">Price now</th><th class="r">Profit / loss (₹)</th><th class="r">Profit / loss %</th><th>Note</th></tr></thead><tbody id="lbody"></tbody></table></div>
+
+<details><summary class="note">Notes and definitions</summary>
+<p class="note">Profit / loss = current value minus cost. Cost comes from your buying-price sheet; bonus and demerger shares (GSPL, Reliance, part of LIC) have zero cost, so their whole value counts as profit.</p>
+<p class="note">Only the main CDSL account is covered. IIFL Capital (7,500 shares, cost ₹25.1 L) is in your buying sheet but not in the 31 Oct statement, so it is left out. Visesh Infotecnics uses a buy price of 1.41 (value divided by quantity), not the 1.14 in your sheet.</p>
+<p class="note">Prices come from the Maa Kali Live Prices Google Sheet (Google Finance, NSE) and can be delayed by a few minutes. Shares with no live quote use their last saved price.</p>
+</details>
+</div>
+<script>
+const SHEET='1bboIt2qXKSVD0sAghKcotnnK_9_aVBzPBkIrNgfVmPo';
+const BASE=[{"share": "Vaibhav Global", "qty": 15000.0, "avg_buy": 412.3613, "cost": 6185420.23, "price": 166.6, "price_asof": "13 Nov", "value": 2499000.0, "pl": -3686420.23, "pl_pct": -0.595985, "first_buy": "2024-01-31", "last_buy": "2025-03-13", "lots": 6}, {"share": "Orient Cement", "qty": 11963.0, "avg_buy": 342.5125, "cost": 4097476.54, "price": 123.77, "price_asof": "13 Nov", "value": 1480660.51, "pl": -2616816.03, "pl_pct": -0.638641, "first_buy": "2025-03-28", "last_buy": "2025-06-05", "lots": 2}, {"share": "Zee Entertainment", "qty": 8000.0, "avg_buy": 209.8563, "cost": 1678850.23, "price": 72.4, "price_asof": "13 Nov", "value": 579200.0, "pl": -1099650.23, "pl_pct": -0.655002, "first_buy": "2023-05-25", "last_buy": "2025-03-13", "lots": 4}, {"share": "Future Lifestyle Fashions", "qty": 10000.0, "avg_buy": 112.0028, "cost": 1120028.34, "price": 0.83, "price_asof": "31 Oct", "value": 8300.0, "pl": -1111728.34, "pl_pct": -0.992589, "first_buy": "2020-09-03", "last_buy": "2020-10-20", "lots": 2}, {"share": "Inox Wind", "qty": 22201.0, "avg_buy": 101.5316, "cost": 2254101.95, "price": 65.09, "price_asof": "13 Nov", "value": 1445063.09, "pl": -809038.86, "pl_pct": -0.358918, "first_buy": "2025-06-21", "last_buy": "2026-10-09", "lots": 5}, {"share": "Radiant Cash Management Services", "qty": 20000.0, "avg_buy": 80.6466, "cost": 1612931.87, "price": 33.89, "price_asof": "13 Nov", "value": 677800.0, "pl": -935131.87, "pl_pct": -0.579771, "first_buy": "2023-10-13", "last_buy": "2025-03-13", "lots": 4}, {"share": "Music Broadcast", "qty": 40000.0, "avg_buy": 25.12, "cost": 1004800.0, "price": 5.31, "price_asof": "31 Oct", "value": 212400.0, "pl": -792400.0, "pl_pct": -0.788615, "first_buy": "2022-12-28", "last_buy": "2022-12-28", "lots": 1}, {"share": "IRB InvIT Fund", "qty": 45000.0, "avg_buy": 79.162, "cost": 3562288.65, "price": 61.84, "price_asof": "31 Oct", "value": 2782800.0, "pl": -779488.65, "pl_pct": -0.218817, "first_buy": "2018-05-28", "last_buy": "2018-07-26", "lots": 8}, {"share": "Gujarat Energy", "qty": 3846.0, "avg_buy": 399.9798, "cost": 1538322.5, "price": 208.2, "price_asof": "31 Oct", "value": 800737.2, "pl": -737585.3, "pl_pct": -0.479474, "first_buy": "2026-06-23", "last_buy": "2026-06-23", "lots": 1}, {"share": "Indian Oil Corporation", "qty": 15000.0, "avg_buy": 163.0629, "cost": 2445943.5, "price": 144.09, "price_asof": "13 Nov", "value": 2161350.0, "pl": -284593.5, "pl_pct": -0.116353, "first_buy": "2025-12-05", "last_buy": "2025-12-06", "lots": 2}, {"share": "Sammaan Capital", "qty": 14500.0, "avg_buy": 148.1115, "cost": 2147617.2, "price": 135.46, "price_asof": "13 Nov", "value": 1964170.0, "pl": -183447.2, "pl_pct": -0.085419, "first_buy": "2026-07-07", "last_buy": "2026-10-26", "lots": 4}, {"share": "Vedanta Oil & Gas", "qty": 35000.0, "avg_buy": 36.7896, "cost": 1287637.5, "price": 30.25, "price_asof": "31 Oct", "value": 1058750.0, "pl": -228887.5, "pl_pct": -0.177758, "first_buy": "2026-07-07", "last_buy": "2026-07-08", "lots": 2}, {"share": "Visesh Infotecnics", "qty": 500000.0, "avg_buy": 1.4121, "cost": 706033.0, "price": 1.0, "price_asof": "31 Oct", "value": 500000.0, "pl": -206033.0, "pl_pct": -0.291818, "first_buy": "2022-01-25", "last_buy": "2022-01-25", "lots": 1}, {"share": "DCM Shriram Fine Chemicals", "qty": 10000.0, "avg_buy": 42.2269, "cost": 422269.43, "price": 25.1, "price_asof": "31 Oct", "value": 251000.0, "pl": -171269.43, "pl_pct": -0.405593, "first_buy": "2026-02-17", "last_buy": "2026-02-17", "lots": 1}, {"share": "Polyplex Corporation", "qty": 1750.0, "avg_buy": 987.3533, "cost": 1727868.29, "price": 948.0, "price_asof": "13 Nov", "value": 1659000.0, "pl": -68868.29, "pl_pct": -0.039857, "first_buy": "2026-09-30", "last_buy": "2026-10-27", "lots": 5}, {"share": "Aksh Optifibre", "qty": 90000.0, "avg_buy": 8.6912, "cost": 782208.22, "price": 6.95, "price_asof": "13 Nov", "value": 625500.0, "pl": -156708.22, "pl_pct": -0.200341, "first_buy": "2023-03-15", "last_buy": "2023-06-06", "lots": 4}, {"share": "Central Bank of India", "qty": 25000.0, "avg_buy": 32.3735, "cost": 809337.5, "price": 32.04, "price_asof": "13 Nov", "value": 801000.0, "pl": -8337.5, "pl_pct": -0.010302, "first_buy": "2026-07-08", "last_buy": "2026-07-08", "lots": 1}, {"share": "IDBI Bank", "qty": 10000.0, "avg_buy": 87.8195, "cost": 878195.0, "price": 79.9, "price_asof": "13 Nov", "value": 799000.0, "pl": -79195.0, "pl_pct": -0.090179, "first_buy": "2026-01-19", "last_buy": "2026-10-27", "lots": 2}, {"share": "Lakshmi Vilas Bank", "qty": 7185.0, "avg_buy": 19.2263, "cost": 138141.0, "price": 10.0, "price_asof": "31 Oct", "value": 71850.0, "pl": -66291.0, "pl_pct": -0.479879, "first_buy": "2020-08-10", "last_buy": "2020-08-10", "lots": 1}, {"share": "Govt of India 7.54% 2036 (bond)", "qty": 25000.0, "avg_buy": 106.6491, "cost": 2666227.5, "price": 104.0, "price_asof": "31 Oct", "value": 2600000.0, "pl": -66227.5, "pl_pct": -0.024839, "first_buy": "2026-07-15", "last_buy": "2026-07-15", "lots": 1}, {"share": "Bajaj Hindusthan Sugar", "qty": 2500.0, "avg_buy": 38.1704, "cost": 95426.0, "price": 18.42, "price_asof": "13 Nov", "value": 46050.0, "pl": -49376.0, "pl_pct": -0.517427, "first_buy": "2018-04-01", "last_buy": "2018-04-01", "lots": 1}, {"share": "PC Jeweller", "qty": 20000.0, "avg_buy": 17.6475, "cost": 352951.0, "price": 15.49, "price_asof": "13 Nov", "value": 309800.0, "pl": -43151.0, "pl_pct": -0.122258, "first_buy": "2026-10-23", "last_buy": "2026-10-27", "lots": 2}, {"share": "Sumitomo Chemical India", "qty": 1500.0, "avg_buy": 344.2428, "cost": 516364.2, "price": 348.0, "price_asof": "13 Nov", "value": 522000.0, "pl": 5635.8, "pl_pct": 0.010914, "first_buy": "2026-10-28", "last_buy": "2026-10-28", "lots": 1}, {"share": "Matrimony.com", "qty": 271.0, "avg_buy": 663.5023, "cost": 179809.11, "price": 576.3, "price_asof": "13 Nov", "value": 156177.3, "pl": -23631.81, "pl_pct": -0.131427, "first_buy": "2024-10-22", "last_buy": "2026-01-23", "lots": 2}, {"share": "PNC Infratech", "qty": 2500.0, "avg_buy": 135.2303, "cost": 338075.75, "price": 127.79, "price_asof": "13 Nov", "value": 319475.0, "pl": -18600.75, "pl_pct": -0.055019, "first_buy": "2026-10-28", "last_buy": "2026-10-28", "lots": 1}, {"share": "VRL Logistics", "qty": 685.0, "avg_buy": 286.2271, "cost": 196065.56, "price": 340.0, "price_asof": "13 Nov", "value": 232900.0, "pl": 36834.44, "pl_pct": 0.187868, "first_buy": "2026-10-22", "last_buy": "2026-10-22", "lots": 1}, {"share": "Aptus Value Housing Finance", "qty": 2000.0, "avg_buy": 199.381, "cost": 398762.1, "price": 171.44, "price_asof": "13 Nov", "value": 342880.0, "pl": -55882.1, "pl_pct": -0.140139, "first_buy": "2026-10-23", "last_buy": "2026-10-26", "lots": 2}, {"share": "Indus Towers", "qty": 190.0, "avg_buy": 434.6342, "cost": 82580.5, "price": 393.6, "price_asof": "13 Nov", "value": 74784.0, "pl": -7796.5, "pl_pct": -0.094411, "first_buy": "2024-08-01", "last_buy": "2024-08-01", "lots": 1}, {"share": "Religare Enterprises", "qty": 2000.0, "avg_buy": 215.909, "cost": 431817.9, "price": 230.0, "price_asof": "13 Nov", "value": 460000.0, "pl": 28182.1, "pl_pct": 0.065264, "first_buy": "2026-10-21", "last_buy": "2026-10-22", "lots": 2}, {"share": "Wipro", "qty": 605.0, "avg_buy": 205.8556, "cost": 124542.64, "price": 195.25, "price_asof": "13 Nov", "value": 118126.25, "pl": -6416.39, "pl_pct": -0.05152, "first_buy": "2026-05-26", "last_buy": "2026-05-26", "lots": 1}, {"share": "Chemplast Sanmar", "qty": 1000.0, "avg_buy": 186.1698, "cost": 186169.8, "price": 237.01, "price_asof": "13 Nov", "value": 237010.0, "pl": 50840.2, "pl_pct": 0.273085, "first_buy": "2026-10-26", "last_buy": "2026-10-26", "lots": 1}, {"share": "Elpro International", "qty": 1619.0, "avg_buy": 164.0143, "cost": 265539.15, "price": 177.0, "price_asof": "13 Nov", "value": 286563.0, "pl": 21023.85, "pl_pct": 0.079174, "first_buy": "2026-10-26", "last_buy": "2026-10-26", "lots": 1}, {"share": "Spandana Sphoorty", "qty": 2000.0, "avg_buy": 184.966, "cost": 369932.1, "price": 188.73, "price_asof": "13 Nov", "value": 377460.0, "pl": 7527.9, "pl_pct": 0.020349, "first_buy": "2026-10-23", "last_buy": "2026-10-26", "lots": 2}, {"share": "Genus Power Infrastructures", "qty": 700.0, "avg_buy": 261.0384, "cost": 182726.88, "price": 292.95, "price_asof": "13 Nov", "value": 205065.0, "pl": 22338.12, "pl_pct": 0.122249, "first_buy": "2026-10-27", "last_buy": "2026-10-27", "lots": 1}, {"share": "Consolidated Finvest & Holdings", "qty": 1190.0, "avg_buy": 302.4669, "cost": 359935.58, "price": 320.1, "price_asof": "13 Nov", "value": 380919.0, "pl": 20983.42, "pl_pct": 0.058298, "first_buy": "2026-09-11", "last_buy": "2026-09-16", "lots": 2}, {"share": "Manaksia Steels", "qty": 3734.0, "avg_buy": 105.6691, "cost": 394568.52, "price": 122.0, "price_asof": "13 Nov", "value": 455548.0, "pl": 60979.48, "pl_pct": 0.154547, "first_buy": "2026-10-23", "last_buy": "2026-10-26", "lots": 2}, {"share": "Yes Bank", "qty": 18750.0, "avg_buy": 12.8, "cost": 240000.0, "price": 17.56, "price_asof": "13 Nov", "value": 329250.0, "pl": 89250.0, "pl_pct": 0.371875, "first_buy": "2021-11-01", "last_buy": "2021-11-01", "lots": 1}, {"share": "Castrol India", "qty": 46500.0, "avg_buy": 186.6622, "cost": 8679793.4, "price": 189.43, "price_asof": "13 Nov", "value": 8808495.0, "pl": 128701.6, "pl_pct": 0.014828, "first_buy": "2026-01-12", "last_buy": "2026-10-28", "lots": 8}, {"share": "GSPL Transmission", "qty": 1282.0, "avg_buy": 0.0, "cost": 0.0, "price": 114.3, "price_asof": "31 Oct", "value": 146532.6, "pl": 146532.6, "pl_pct": null, "first_buy": "2026-07-27", "last_buy": "2026-07-27", "lots": 1}, {"share": "Life Insurance Corporation", "qty": 5000.0, "avg_buy": 347.2068, "cost": 1736034.0, "price": 401.7, "price_asof": "13 Nov", "value": 2008500.0, "pl": 272466.0, "pl_pct": 0.156947, "first_buy": "2022-05-13", "last_buy": "2026-06-02", "lots": 4}, {"share": "Reliance Industries", "qty": 500.0, "avg_buy": 0.0, "cost": 0.0, "price": 1338.5, "price_asof": "13 Nov", "value": 669250.0, "pl": 669250.0, "pl_pct": null, "first_buy": "2024-10-30", "last_buy": "2024-10-30", "lots": 1}, {"share": "Aurum Proptech", "qty": 28000.0, "avg_buy": 26.9358, "cost": 754201.8, "price": 218.66, "price_asof": "13 Nov", "value": 6122480.0, "pl": 5368278.2, "pl_pct": 7.117827, "first_buy": "2022-05-17", "last_buy": "2026-10-26", "lots": 2}];
+const LOTS=[{"id": 1, "share": "Aksh Optifibre", "date": "2023-03-15", "qty": 7917.0, "rate": 8.52, "cost": 67452.84, "note": ""}, {"id": 2, "share": "Aksh Optifibre", "date": "2023-04-03", "qty": 32083.0, "rate": 8.82, "cost": 283005.38, "note": ""}, {"id": 3, "share": "Aksh Optifibre", "date": "2023-05-25", "qty": 25000.0, "rate": 8.86, "cost": 221500.0, "note": ""}, {"id": 4, "share": "Aksh Optifibre", "date": "2023-06-06", "qty": 25000.0, "rate": 8.41, "cost": 210250.0, "note": ""}, {"id": 5, "share": "Aptus Value Housing Finance", "date": "2026-10-23", "qty": 1000.0, "rate": 202.2, "cost": 202202.0, "note": ""}, {"id": 6, "share": "Aptus Value Housing Finance", "date": "2026-10-26", "qty": 1000.0, "rate": 196.56, "cost": 196560.1, "note": ""}, {"id": 7, "share": "Aurum Proptech", "date": "2022-05-17", "qty": 27000.0, "rate": 20.0, "cost": 540000.0, "note": "Rights issue"}, {"id": 8, "share": "Aurum Proptech", "date": "2026-10-26", "qty": 1000.0, "rate": 214.2, "cost": 214201.8, "note": ""}, {"id": 9, "share": "Bajaj Hindusthan Sugar", "date": "2018-04-01", "qty": 2500.0, "rate": 38.17, "cost": 95426.0, "note": ""}, {"id": 10, "share": "Castrol India", "date": "2026-01-12", "qty": 7500.0, "rate": 187.24, "cost": 1404300.0, "note": ""}, {"id": 11, "share": "Castrol India", "date": "2026-01-19", "qty": 10000.0, "rate": 184.78, "cost": 1847846.0, "note": ""}, {"id": 12, "share": "Castrol India", "date": "2026-07-06", "qty": 5000.0, "rate": 184.56, "cost": 922817.5, "note": ""}, {"id": 13, "share": "Castrol India", "date": "2026-07-07", "qty": 2500.0, "rate": 184.58, "cost": 461461.0, "note": ""}, {"id": 14, "share": "Castrol India", "date": "2026-07-08", "qty": 1000.0, "rate": 184.38, "cost": 184379.6, "note": ""}, {"id": 15, "share": "Castrol India", "date": "2026-10-14", "qty": 2500.0, "rate": 193.98, "cost": 484949.5, "note": ""}, {"id": 16, "share": "Castrol India", "date": "2026-10-27", "qty": 16000.0, "rate": 187.41, "cost": 2998564.8, "note": ""}, {"id": 17, "share": "Castrol India", "date": "2026-10-28", "qty": 2000.0, "rate": 187.74, "cost": 375475.0, "note": ""}, {"id": 18, "share": "Central Bank of India", "date": "2026-07-08", "qty": 25000.0, "rate": 32.37, "cost": 809337.5, "note": ""}, {"id": 19, "share": "Chemplast Sanmar", "date": "2026-10-26", "qty": 1000.0, "rate": 186.17, "cost": 186169.8, "note": ""}, {"id": 20, "share": "Consolidated Finvest & Holdings", "date": "2026-09-11", "qty": 1000.0, "rate": 302.8, "cost": 302802.5, "note": ""}, {"id": 21, "share": "Consolidated Finvest & Holdings", "date": "2026-09-16", "qty": 190.0, "rate": 300.7, "cost": 57133.08, "note": ""}, {"id": 22, "share": "DCM Shriram Fine Chemicals", "date": "2026-02-17", "qty": 10000.0, "rate": 42.23, "cost": 422269.43, "note": ""}, {"id": 23, "share": "Elpro International", "date": "2026-10-26", "qty": 1619.0, "rate": 164.01, "cost": 265539.15, "note": ""}, {"id": 24, "share": "Future Lifestyle Fashions", "date": "2020-09-03", "qty": 5000.0, "rate": 149.33, "cost": 746659.0, "note": ""}, {"id": 25, "share": "Future Lifestyle Fashions", "date": "2020-10-20", "qty": 5000.0, "rate": 74.67, "cost": 373369.34, "note": ""}, {"id": 26, "share": "GSPL Transmission", "date": "2026-07-27", "qty": 1282.0, "rate": 0.0, "cost": 0.0, "note": "Demerger shares"}, {"id": 27, "share": "Genus Power Infrastructures", "date": "2026-10-27", "qty": 700.0, "rate": 261.04, "cost": 182726.88, "note": ""}, {"id": 28, "share": "Govt of India 7.54% 2036 (bond)", "date": "2026-07-15", "qty": 25000.0, "rate": 106.65, "cost": 2666227.5, "note": ""}, {"id": 29, "share": "Gujarat Energy", "date": "2026-06-23", "qty": 3846.0, "rate": 399.98, "cost": 1538322.5, "note": ""}, {"id": 30, "share": "IDBI Bank", "date": "2026-01-19", "qty": 5000.0, "rate": 98.93, "cost": 494647.5, "note": ""}, {"id": 31, "share": "IDBI Bank", "date": "2026-10-27", "qty": 5000.0, "rate": 76.71, "cost": 383547.5, "note": ""}, {"id": 32, "share": "IRB InvIT Fund", "date": "2018-05-28", "qty": 5000.0, "rate": 78.24, "cost": 391219.9, "note": ""}, {"id": 33, "share": "IRB InvIT Fund", "date": "2018-05-28", "qty": 5000.0, "rate": 78.38, "cost": 391875.5, "note": ""}, {"id": 34, "share": "IRB InvIT Fund", "date": "2018-05-29", "qty": 5000.0, "rate": 78.38, "cost": 391891.5, "note": ""}, {"id": 35, "share": "IRB InvIT Fund", "date": "2018-06-07", "qty": 5000.0, "rate": 80.16, "cost": 400779.98, "note": ""}, {"id": 36, "share": "IRB InvIT Fund", "date": "2018-06-12", "qty": 5000.0, "rate": 79.91, "cost": 399528.01, "note": ""}, {"id": 37, "share": "IRB InvIT Fund", "date": "2018-06-28", "qty": 5000.0, "rate": 79.96, "cost": 399778.38, "note": ""}, {"id": 38, "share": "IRB InvIT Fund", "date": "2018-06-29", "qty": 10000.0, "rate": 79.27, "cost": 792694.0, "note": ""}, {"id": 39, "share": "IRB InvIT Fund", "date": "2018-07-26", "qty": 5000.0, "rate": 78.9, "cost": 394521.38, "note": ""}, {"id": 40, "share": "Indian Oil Corporation", "date": "2025-12-05", "qty": 10000.0, "rate": 163.0, "cost": 1629980.0, "note": ""}, {"id": 41, "share": "Indian Oil Corporation", "date": "2025-12-06", "qty": 5000.0, "rate": 163.19, "cost": 815963.5, "note": ""}, {"id": 42, "share": "Indus Towers", "date": "2024-08-01", "qty": 190.0, "rate": 434.63, "cost": 82580.5, "note": ""}, {"id": 43, "share": "Inox Wind", "date": "2025-06-21", "qty": 6437.0, "rate": 171.24, "cost": 1102292.95, "note": ""}, {"id": 44, "share": "Inox Wind", "date": "2025-08-25", "qty": 764.0, "rate": 120.0, "cost": 91680.0, "note": "Rights issue"}, {"id": 45, "share": "Inox Wind", "date": "2026-09-11", "qty": 5000.0, "rate": 76.93, "cost": 384634.0, "note": ""}, {"id": 46, "share": "Inox Wind", "date": "2026-09-30", "qty": 5000.0, "rate": 71.45, "cost": 357275.0, "note": ""}, {"id": 47, "share": "Inox Wind", "date": "2026-10-09", "qty": 5000.0, "rate": 63.64, "cost": 318220.0, "note": ""}, {"id": 48, "share": "Lakshmi Vilas Bank", "date": "2020-08-10", "qty": 7185.0, "rate": 19.23, "cost": 138141.0, "note": ""}, {"id": 49, "share": "Life Insurance Corporation", "date": "2022-05-13", "qty": 500.0, "rate": 949.0, "cost": 474500.0, "note": ""}, {"id": 50, "share": "Life Insurance Corporation", "date": "2023-01-30", "qty": 1000.0, "rate": 664.66, "cost": 664664.0, "note": ""}, {"id": 51, "share": "Life Insurance Corporation", "date": "2023-03-10", "qty": 1000.0, "rate": 596.87, "cost": 596870.0, "note": ""}, {"id": 52, "share": "Life Insurance Corporation", "date": "2026-06-02", "qty": 2500.0, "rate": 0.0, "cost": 0.0, "note": "Bonus shares"}, {"id": 53, "share": "Manaksia Steels", "date": "2026-10-23", "qty": 1234.0, "rate": 108.11, "cost": 133405.27, "note": ""}, {"id": 54, "share": "Manaksia Steels", "date": "2026-10-26", "qty": 2500.0, "rate": 104.47, "cost": 261163.25, "note": ""}, {"id": 55, "share": "Matrimony.com", "date": "2024-10-22", "qty": 104.0, "rate": 812.73, "cost": 84523.92, "note": ""}, {"id": 56, "share": "Matrimony.com", "date": "2026-01-23", "qty": 167.0, "rate": 570.57, "cost": 95285.19, "note": ""}, {"id": 57, "share": "Music Broadcast", "date": "2022-12-28", "qty": 40000.0, "rate": 25.12, "cost": 1004800.0, "note": ""}, {"id": 58, "share": "Orient Cement", "date": "2025-03-28", "qty": 6963.0, "rate": 339.58, "cost": 2364495.54, "note": ""}, {"id": 59, "share": "Orient Cement", "date": "2025-06-05", "qty": 5000.0, "rate": 346.6, "cost": 1732981.0, "note": ""}, {"id": 60, "share": "PC Jeweller", "date": "2026-10-23", "qty": 10000.0, "rate": 18.51, "cost": 185084.0, "note": ""}, {"id": 61, "share": "PC Jeweller", "date": "2026-10-27", "qty": 10000.0, "rate": 16.79, "cost": 167867.0, "note": ""}, {"id": 62, "share": "PNC Infratech", "date": "2026-10-28", "qty": 2500.0, "rate": 135.23, "cost": 338075.75, "note": ""}, {"id": 63, "share": "Polyplex Corporation", "date": "2026-09-30", "qty": 250.0, "rate": 1076.02, "cost": 269004.93, "note": ""}, {"id": 64, "share": "Polyplex Corporation", "date": "2026-10-08", "qty": 500.0, "rate": 1014.68, "cost": 507337.9, "note": ""}, {"id": 65, "share": "Polyplex Corporation", "date": "2026-10-21", "qty": 250.0, "rate": 993.92, "cost": 248478.83, "note": ""}, {"id": 66, "share": "Polyplex Corporation", "date": "2026-10-22", "qty": 250.0, "rate": 945.9, "cost": 236475.73, "note": ""}, {"id": 67, "share": "Polyplex Corporation", "date": "2026-10-27", "qty": 500.0, "rate": 933.14, "cost": 466570.9, "note": ""}, {"id": 68, "share": "Radiant Cash Management Services", "date": "2023-10-13", "qty": 5000.0, "rate": 100.4, "cost": 502001.54, "note": ""}, {"id": 69, "share": "Radiant Cash Management Services", "date": "2023-11-28", "qty": 5000.0, "rate": 89.57, "cost": 447835.68, "note": ""}, {"id": 70, "share": "Radiant Cash Management Services", "date": "2024-11-14", "qty": 5000.0, "rate": 74.56, "cost": 372804.65, "note": ""}, {"id": 71, "share": "Radiant Cash Management Services", "date": "2025-03-13", "qty": 5000.0, "rate": 58.06, "cost": 290290.0, "note": ""}, {"id": 72, "share": "Reliance Industries", "date": "2024-10-30", "qty": 500.0, "rate": 0.0, "cost": 0.0, "note": "Bonus shares"}, {"id": 73, "share": "Religare Enterprises", "date": "2026-10-21", "qty": 1000.0, "rate": 218.92, "cost": 218917.0, "note": ""}, {"id": 74, "share": "Religare Enterprises", "date": "2026-10-22", "qty": 1000.0, "rate": 212.9, "cost": 212900.9, "note": ""}, {"id": 75, "share": "Sammaan Capital", "date": "2026-07-07", "qty": 3000.0, "rate": 170.23, "cost": 510686.7, "note": ""}, {"id": 76, "share": "Sammaan Capital", "date": "2026-07-08", "qty": 4000.0, "rate": 165.68, "cost": 662702.0, "note": ""}, {"id": 77, "share": "Sammaan Capital", "date": "2026-09-30", "qty": 5000.0, "rate": 137.07, "cost": 685331.0, "note": ""}, {"id": 78, "share": "Sammaan Capital", "date": "2026-10-26", "qty": 2500.0, "rate": 115.56, "cost": 288897.5, "note": ""}, {"id": 79, "share": "Spandana Sphoorty", "date": "2026-10-23", "qty": 1000.0, "rate": 191.18, "cost": 191179.0, "note": ""}, {"id": 80, "share": "Spandana Sphoorty", "date": "2026-10-26", "qty": 1000.0, "rate": 178.75, "cost": 178753.1, "note": ""}, {"id": 81, "share": "Sumitomo Chemical India", "date": "2026-10-28", "qty": 1500.0, "rate": 344.24, "cost": 516364.2, "note": ""}, {"id": 82, "share": "VRL Logistics", "date": "2026-10-22", "qty": 685.0, "rate": 286.23, "cost": 196065.56, "note": ""}, {"id": 83, "share": "Vaibhav Global", "date": "2024-01-31", "qty": 2500.0, "rate": 535.02, "cost": 1337539.94, "note": ""}, {"id": 84, "share": "Vaibhav Global", "date": "2024-02-01", "qty": 2500.0, "rate": 488.3, "cost": 1220754.84, "note": ""}, {"id": 85, "share": "Vaibhav Global", "date": "2024-02-13", "qty": 2500.0, "rate": 447.56, "cost": 1118904.97, "note": ""}, {"id": 86, "share": "Vaibhav Global", "date": "2024-03-13", "qty": 2500.0, "rate": 400.4, "cost": 1001000.0, "note": ""}, {"id": 87, "share": "Vaibhav Global", "date": "2024-03-14", "qty": 2500.0, "rate": 382.23, "cost": 955572.67, "note": ""}, {"id": 88, "share": "Vaibhav Global", "date": "2025-03-13", "qty": 2500.0, "rate": 220.66, "cost": 551647.81, "note": ""}, {"id": 89, "share": "Vedanta Oil & Gas", "date": "2026-07-07", "qty": 20000.0, "rate": 36.47, "cost": 729468.0, "note": ""}, {"id": 90, "share": "Vedanta Oil & Gas", "date": "2026-07-08", "qty": 15000.0, "rate": 37.21, "cost": 558169.5, "note": ""}, {"id": 91, "share": "Visesh Infotecnics", "date": "2022-01-25", "qty": 500000.0, "rate": 1.41, "cost": 706033.0, "note": "Sheet shows rate 1.14; value / qty = 1.41"}, {"id": 92, "share": "Wipro", "date": "2026-05-26", "qty": 605.0, "rate": 205.86, "cost": 124542.64, "note": ""}, {"id": 93, "share": "Yes Bank", "date": "2021-11-01", "qty": 18750.0, "rate": 12.8, "cost": 240000.0, "note": ""}, {"id": 94, "share": "Zee Entertainment", "date": "2023-05-25", "qty": 1000.0, "rate": 178.89, "cost": 178889.4, "note": ""}, {"id": 95, "share": "Zee Entertainment", "date": "2024-01-10", "qty": 2000.0, "rate": 264.17, "cost": 528341.46, "note": ""}, {"id": 96, "share": "Zee Entertainment", "date": "2024-01-11", "qty": 3000.0, "rate": 254.85, "cost": 764563.82, "note": ""}, {"id": 97, "share": "Zee Entertainment", "date": "2025-03-13", "qty": 2000.0, "rate": 103.53, "cost": 207055.55, "note": ""}];
+const $=id=>document.getElementById(id);
+const fi=n=>Math.round(n).toLocaleString('en-IN');
+const f2=n=>n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const sg=n=>n<0?'−':'';
+const inr=n=>{const a=Math.abs(n);return sg(n)+'₹'+(a>=1e7?(a/1e7).toFixed(2)+' Cr':a>=1e5?(a/1e5).toFixed(1)+' L':fi(a));};
+const pc=n=>(n==null||isNaN(n))?'—':sg(n)+Math.abs(n*100).toFixed(1)+'%';
+const pcs=n=>(n>0?'+':'')+pc(n);
+const ins=n=>(n>0?'+':'')+inr(n);
+const cls=n=>n>0?'ok':n<0?'bad':'';
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const dt=s=>{const p=s.split('-');return p.length===3?p[2]+' '+MON[+p[1]-1]+' '+p[0]:s;};
+const held=n=>n<365?Math.max(1,Math.round(n/30.4))+' mo':(n/365).toFixed(1)+' yr';
+const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0);
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e;};
+let PRICES=new Map(),liveOk=false,H=[],LP=[],loadedAt=null;
+const st={p:'30',q:'',key:'pl',dir:1,lot:'',term:''};
+
+function parseCSV(t){const rows=[];let r=[],c='',q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch==='"'){if(t[i+1]==='"'){c+='"';i++;}else q=false;}else c+=ch;}else if(ch==='"')q=true;else if(ch===','){r.push(c);c='';}else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;r.push(c);rows.push(r);r=[];c='';}else c+=ch;}if(c!==''||r.length){r.push(c);rows.push(r);}return rows;}
+const num=x=>{const n=parseFloat(String(x==null?'':x).replace(/,/g,''));return isNaN(n)?null:n;};
+
+async function loadPrices(){
+  try{
+    const url='https://docs.google.com/spreadsheets/d/'+SHEET+'/gviz/tq?tqx=out:csv&sheet=Sheet1&_='+Date.now();
+    const res=await fetch(url,{cache:'no-store'});
+    if(!res.ok)throw new Error('http '+res.status);
+    const rows=parseCSV(await res.text());
+    if(rows.length<2)throw new Error('empty');
+    const h=rows[0].map(s=>s.trim());const ix=n=>h.indexOf(n);
+    const m=new Map();
+    rows.slice(1).forEach(r=>{if(!r[ix('Share')])return;m.set(r[ix('Share')].trim(),{live:num(r[ix('Live price')]),src:(r[ix('Price source')]||'').trim(),p7:num(r[ix('Close 7d ago')]),p30:num(r[ix('Close 30d ago')]),p60:num(r[ix('Close 60d ago')]),p90:num(r[ix('Close 90d ago')])});});
+    if(!m.size)throw new Error('no rows');
+    PRICES=m;liveOk=true;
+  }catch(e){PRICES=new Map();liveOk=false;}
+  loadedAt=new Date();
+  compute();render();
+}
+
+function compute(){
+  const cut=new Date();cut.setUTCFullYear(cut.getUTCFullYear()-1);const cutS=cut.toISOString().slice(0,10);
+  H=BASE.map(b=>{
+    const p=PRICES.get(b.share);const live=!!p&&p.live!=null&&p.src==='Live';
+    const price=live?p.live:+b.price;const qty=+b.qty,cost=+b.cost,value=qty*price,pl=value-cost;
+    let sq=0,lq=0,sp=0,lp=0;
+    LOTS.filter(l=>l.share===b.share).forEach(l=>{const q=+l.qty,x=q*price-+l.cost;if(l.date<cutS){lq+=q;lp+=x;}else{sq+=q;sp+=x;}});
+    const o={share:b.share,qty,avg_buy:+b.avg_buy,cost,price,asof:live?'Live':b.price_asof,value,pl,pl_pct:cost?pl/cost:null,first_buy:b.first_buy,lots:+b.lots,st_qty:sq,lt_qty:lq,st_pl:sp,lt_pl:lp};
+    [7,30,60,90].forEach(n=>{const bp=p&&p['p'+n];const ok=live&&bp!=null&&bp>0;o['c'+n]=ok?price/bp-1:null;o['g'+n]=ok?qty*(price-bp):null;});
+    return o;
+  });
+  const m=new Map(H.map(h=>[h.share,h]));const now=Date.now();
+  LP=LOTS.map(l=>{const h=m.get(l.share);const cmp=h?h.price:0;const cost=+l.cost,qty=+l.qty,value=qty*cmp;const days=Math.floor((now-Date.parse(l.date+'T00:00:00Z'))/864e5);return {id:l.id,share:l.share,date:l.date,days,term:l.date<cutS?'Long':'Short',qty,rate:+l.rate,cost,cmp,pl:value-cost,pl_pct:cost?(value-cost)/cost:null,note:l.note||''};});
+}
+
+function bars(list,c,g,m){
+  const w=el('div');
+  list.forEach(r=>{const row=el('div','row');row.append(el('span','nm',r.share));
+    const tr=el('span','tr');const z=el('i','zero');z.style.left='50%';const wd=Math.abs(r[c])/m*50;const b=el('b','bar '+(r[c]>=0?'g':'l'));b.style.width=wd+'%';b.style.left=(r[c]>=0?50:50-wd)+'%';tr.append(z,b);
+    const v=el('span','val');const a=el('span',cls(r[c]),pcs(r[c]));v.append(a,el('small','',ins(r[g])));row.append(tr,v);w.append(row);});
+  return w;
+}
+
+function render(){
+  const T={cost:sum(H,h=>h.cost),value:sum(H,h=>h.value)};T.pl=T.value-T.cost;
+  const lt=sum(H,h=>h.lt_pl),stp=sum(H,h=>h.st_pl),gain=H.filter(h=>h.pl>0).length,loss=H.filter(h=>h.pl<0).length,fresh=H.filter(h=>h.asof==='Live').length,stale=H.length-fresh;
+  $('banner').replaceChildren();
+  if(!liveOk){$('banner').append(el('div','banner','Live prices could not be loaded, so this page is showing the last saved prices. Check your internet and press Refresh prices.'));}
+  const tk=$('takeaway');tk.replaceChildren('The portfolio is ',el('b','',T.pl>=0?'up':'down'),' ',el('b','',inr(Math.abs(T.pl))),' (',el('b','',pc(Math.abs(T.pl/T.cost))),') on ',el('b','',inr(T.cost)),' invested: ',el('b','',gain),' shares are in profit and ',el('b','',loss),' are in loss.');
+  $('stamp').textContent=loadedAt?'Prices loaded at '+loadedAt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'';
+  const cards=[['Invested',inr(T.cost),''],['Current value',inr(T.value),''],['Net profit / loss',inr(T.pl),cls(T.pl)],['Profit / loss %',pc(T.pl/T.cost),cls(T.pl)],['Long-term profit / loss',inr(lt),cls(lt)],['Short-term profit / loss',inr(stp),cls(stp)]];
+  $('cards').replaceChildren(...cards.map(c=>{const d=el('div','card');d.append(el('div','lbl',c[0]),el('div','big '+c[2],c[1]));return d;}));
+  $('livenote').textContent=liveOk?(fresh+' holdings are live. '+stale+' have no live quote and use their last saved price (see the Price date column).'):'No holdings are live right now.';
+  // perf
+  const labels={7:'1 week',30:'1 month',60:'2 months',90:'3 months'};
+  const pf=el('div','cards');
+  [7,30,60,90].forEach(n=>{const rows=H.filter(r=>r['c'+n]!=null);const g=sum(rows,r=>r['g'+n]);const was=sum(rows,r=>r.value)-g;const p=rows.length&&was>0?g/was:null;const d=el('div','card');d.append(el('div','lbl','Since '+labels[n]+' ago'),el('div','big '+(p==null?'':cls(p)),p==null?'—':pcs(p)),el('div','note',p==null?'No price history yet':ins(g)+' on '+rows.length+' shares'));pf.append(d);});
+  $('perf').replaceChildren(pf);
+  // movers
+  const n=st.p,c='c'+n,g='g'+n;const rows=H.filter(r=>r[c]!=null);const mv=$('movers');
+  if(!rows.length){mv.textContent='No price history for this period yet.';}
+  else{
+    const by=[...rows].sort((a,b)=>b[c]-a[c]);const top=by.slice(0,5),bot=by.slice(-5).reverse();const m=Math.max(...by.map(r=>Math.abs(r[c])))||1;
+    const tot=sum(rows,r=>r[g]),up=rows.filter(r=>r[c]>0).length,dn=rows.filter(r=>r[c]<0).length;
+    const card=(l,nm,sb,t)=>{const d=el('div','card');d.append(el('div','lbl',l),el('div','mid',nm),el('div','note '+(t==null?'':cls(t)),sb));return d;};
+    const cs=el('div','cards');const best=top[0],worst=bot[0];
+    cs.append(card('🚀 Rocket of the period',best.share,pcs(best[c])+' · '+ins(best[g]),best[c]),card('🪂 Needs a parachute',worst.share,pcs(worst[c])+' · '+ins(worst[g]),worst[c]),card(tot>=0?'💰 Money made':'💸 Money lost',ins(tot),'price moves only, on '+rows.length+' shares',tot),card(up>=dn?'🐂 Bulls are winning':'🐻 Bears are winning',up+' up · '+dn+' down','of '+rows.length+' shares with a live quote',null));
+    const two=el('div','two');const a=el('div');a.append(el('h3','','🏆 Top 5 gainers'),bars(top,c,g,m));const b=el('div');b.append(el('h3','','😬 Top 5 losers'),bars(bot,c,g,m));two.append(a,b);
+    mv.replaceChildren(cs,two,el('h3','','📊 Every share, ranked'),bars(by,c,g,m));
+  }
+  // pl chart
+  const pr=[...H].sort((a,b)=>b.pl-a.pl);const mg=Math.max(0,...pr.map(r=>r.pl)),ml=Math.max(0,...pr.map(r=>-r.pl)),rg=(mg+ml)||1,z0=ml/rg*100;
+  const pw=el('div');
+  pr.forEach(r=>{const row=el('div','row');row.append(el('span','nm',r.share));const tr=el('span','tr');const zl=el('i','zero');zl.style.left=z0+'%';const w=Math.abs(r.pl)/rg*100;const b=el('b','bar '+(r.pl>=0?'g':'l'));b.style.width=w+'%';b.style.left=(r.pl>=0?z0:z0-w)+'%';tr.append(zl,b);const v=el('span','val');v.append(el('span',cls(r.pl),inr(r.pl)),el('small','',pc(r.pl_pct)));row.append(tr,v);pw.append(row);});
+  $('plchart').replaceChildren(pw);
+  renderHold();renderLots();
+}
+
+const COLS=[['share','Share'],['first_buy','First bought'],['lots','Lots','r'],['qty','Qty','r'],['avg_buy','Avg buy price','r'],['price','Price now','r'],['asof','Price date'],['cost','Cost (₹)','r'],['value','Value (₹)','r'],['pl','Profit / loss (₹)','r'],['pl_pct','Profit / loss %','r'],['lt_qty','Long-term qty','r'],['st_qty','Short-term qty','r'],['lt_pl','Long-term P/L (₹)','r'],['st_pl','Short-term P/L (₹)','r']];
+COLS[8][2]='r';
+function buildHead(){const tr=$('hhead');tr.replaceChildren();COLS.forEach(c=>{const th=el('th',c[2]||'',c[1]);th.addEventListener('click',()=>{st.dir=st.key===c[0]?-st.dir:((c[0]==='share'||c[0]==='asof')?1:-1);st.key=c[0];renderHold();});tr.append(th);});}
+function renderHold(){
+  const q=st.q.toLowerCase(),k=st.key;
+  const rows=H.filter(r=>r.share.toLowerCase().includes(q)).sort((a,b)=>{const x=a[k],y=b[k];const c=typeof x==='string'?x.localeCompare(y):(x==null?-Infinity:x)-(y==null?-Infinity:y);return c*st.dir;});
+  $('hbody').replaceChildren(...rows.map(r=>{
+    const tr=el('tr');
+    const cells=[[r.share],[dt(r.first_buy)],[fi(r.lots),'r'],[fi(r.qty),'r'],[f2(r.avg_buy),'r'],[f2(r.price),'r'],[r.asof,r.asof==='Live'?'':'warn'],[fi(r.cost),'r'],[fi(r.value),'r'],[sg(r.pl)+fi(Math.abs(r.pl)),'r '+cls(r.pl)],[pc(r.pl_pct),'r '+cls(r.pl)],[fi(r.lt_qty),'r'],[fi(r.st_qty),'r'],[sg(r.lt_pl)+fi(Math.abs(r.lt_pl)),'r '+cls(r.lt_pl)],[sg(r.st_pl)+fi(Math.abs(r.st_pl)),'r '+cls(r.st_pl)]];
+    cells.forEach(c=>tr.append(el('td',c[1]||'',c[0])));return tr;}));
+}
+function renderLots(){
+  const sel=$('lotsel');if(!sel.options.length){sel.append(new Option('All shares',''));BASE.map(b=>b.share).sort().forEach(n=>sel.append(new Option(n,n)));}
+  const rows=LP.filter(r=>(!st.lot||r.share===st.lot)&&(!st.term||r.term===st.term)).sort((a,b)=>b.date.localeCompare(a.date)||a.share.localeCompare(b.share));
+  $('lbody').replaceChildren(...rows.map(r=>{const tr=el('tr');[[dt(r.date)],[r.share],[held(r.days),'r'],[r.term,r.term==='Short'?'warn':''],[fi(r.qty),'r'],[f2(r.rate),'r'],[fi(r.cost),'r'],[f2(r.cmp),'r'],[sg(r.pl)+fi(Math.abs(r.pl)),'r '+cls(r.pl)],[pc(r.pl_pct),'r '+cls(r.pl)],[r.note]].forEach(c=>tr.append(el('td',c[1]||'',c[0])));return tr;}));
+}
+$('persel').addEventListener('change',e=>{st.p=e.target.value;render();});
+$('hq').addEventListener('input',e=>{st.q=e.target.value;renderHold();});
+$('lotsel').addEventListener('change',e=>{st.lot=e.target.value;renderLots();});
+$('termsel').addEventListener('change',e=>{st.term=e.target.value;renderLots();});
+$('refresh').addEventListener('click',()=>{$('takeaway').textContent='Loading prices…';loadPrices();});
+buildHead();compute();render();loadPrices();
+setInterval(loadPrices,300000);
+</script>
+</body>
+</html>
