@@ -49,6 +49,7 @@ details{margin-top:28px}summary{cursor:pointer}
 <div class="pf">
 <h1>Maa Kali portfolio</h1>
 <div id="banner"></div>
+<p class="note" id="status"></p>
 <p class="sub" id="takeaway">Loading prices…</p>
 <div class="ctl"><button id="refresh">Refresh prices</button><span class="note" id="stamp"></span></div>
 <div class="cards" id="cards" style="margin-top:14px"></div>
@@ -120,18 +121,19 @@ function fetchSheet(){return new Promise((res,rej)=>{
 const PUB='https://docs.google.com/spreadsheets/d/e/2PACX-1vSqL9OAFTTZGpNE0bOJF2IdXU3YjmvgJtLfo_35PPwN4ofW5XUwaXyqKYaNxbCqEZf2U74_hh8hvUge/pub?gid=0&single=true&output=csv';
 async function loadPrices(){
   try{
-    const res=await fetch(PUB+'&_='+Date.now(),{cache:'no-store'});
+    $('status').textContent='Step 1: asking Google for prices…';const ac=new AbortController();const tm=setTimeout(()=>ac.abort(),15000);let res;try{res=await fetch(PUB+'&_='+Date.now(),{cache:'no-store',signal:ac.signal});}finally{clearTimeout(tm);}$('status').textContent='Step 2: Google answered with code '+res.status+'…';
     if(!res.ok)throw new Error('http '+res.status);
-    const rows=parseCSV(await res.text());
-    if(rows.length<2)throw new Error('empty');
+    const txt=await res.text();$('status').textContent='Step 3: got '+txt.length+' characters…';const rows=parseCSV(txt);
+    if(rows.length<2)throw new Error('empty answer: '+txt.slice(0,80));
     const h=rows[0].map(s=>s.trim());const ix=n=>h.indexOf(n);
-    if(ix('Share')<0)throw new Error('no Share column');
+    if(ix('Share')<0)throw new Error('no Share column, first cells: '+h.slice(0,3).join('|'));
     const m=new Map();
     rows.slice(1).forEach(r=>{const nm=r[ix('Share')];if(!nm)return;m.set(nm.trim(),{live:num(r[ix('Live price')]),src:(r[ix('Price source')]||'').trim(),p7:num(r[ix('Close 7d ago')]),p30:num(r[ix('Close 30d ago')]),p60:num(r[ix('Close 60d ago')]),p90:num(r[ix('Close 90d ago')])});});
     if(!m.size)throw new Error('no rows');
     PRICES=m;liveOk=true;
-  }catch(e){PRICES=new Map();liveOk=false;lastErr=(e&&e.message)||String(e);}
+  }catch(e){PRICES=new Map();liveOk=false;lastErr=((e&&e.name)||'error')+': '+((e&&e.message)||'no details');}
   loadedAt=new Date();
+  $('status').textContent=liveOk?'':'';
   compute();render();
 }
 
@@ -162,7 +164,7 @@ function render(){
   const T={cost:sum(H,h=>h.cost),value:sum(H,h=>h.value)};T.pl=T.value-T.cost;
   const lt=sum(H,h=>h.lt_pl),stp=sum(H,h=>h.st_pl),gain=H.filter(h=>h.pl>0).length,loss=H.filter(h=>h.pl<0).length,fresh=H.filter(h=>h.asof==='Live').length,stale=H.length-fresh;
   $('banner').replaceChildren();
-  if(!liveOk){$('banner').append(el('div','banner','Live prices could not be loaded, so this page is showing the last saved prices. Check your internet and press Refresh prices. (Reason: '+lastErr+' · page version 4)'));}
+  if(!liveOk&&loadedAt){$('banner').append(el('div','banner','Live prices could not be loaded, so this page is showing the last saved prices. Check your internet and press Refresh prices. (Reason: '+lastErr+' · page version 5)'));}
   const tk=$('takeaway');tk.replaceChildren('The portfolio is ',el('b','',T.pl>=0?'up':'down'),' ',el('b','',inr(Math.abs(T.pl))),' (',el('b','',pc(Math.abs(T.pl/T.cost))),') on ',el('b','',inr(T.cost)),' invested: ',el('b','',gain),' shares are in profit and ',el('b','',loss),' are in loss.');
   $('stamp').textContent=loadedAt?'Prices loaded at '+loadedAt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'';
   const cards=[['Invested',inr(T.cost),''],['Current value',inr(T.value),''],['Net profit / loss',inr(T.pl),cls(T.pl)],['Profit / loss %',pc(T.pl/T.cost),cls(T.pl)],['Long-term profit / loss',inr(lt),cls(lt)],['Short-term profit / loss',inr(stp),cls(stp)]];
