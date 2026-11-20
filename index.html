@@ -62,7 +62,7 @@ details{margin-top:28px}summary{cursor:pointer}
 
 <h2>Movers and shakers 🎢</h2>
 <p class="note">How each share's price moved over the period you pick. Shares with no live quote are left out.</p>
-<div class="ctl"><select id="persel"><option value="1">Since yesterday</option><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="60">Last 60 days</option><option value="90">Last 90 days</option></select></div>
+<div class="ctl"><select id="persel"><option value="buy">Since I bought</option><option value="1">Since yesterday</option><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="60">Last 60 days</option><option value="90">Last 90 days</option></select></div>
 <div id="movers" style="margin-top:10px"></div>
 
 <h2>Profit / loss by share</h2>
@@ -146,6 +146,7 @@ function compute(){
     LOTS.filter(l=>l.share===b.share).forEach(l=>{const q=+l.qty,x=q*price-+l.cost;if(l.date<cutS){lq+=q;lp+=x;}else{sq+=q;sp+=x;}});
     const o={share:b.share,qty,avg_buy:+b.avg_buy,cost,price,asof:live?'Live':b.price_asof,value,pl,pl_pct:cost?pl/cost:null,first_buy:b.first_buy,lots:+b.lots,st_qty:sq,lt_qty:lq,st_pl:sp,lt_pl:lp};
     [1,7,30,60,90].forEach(n=>{const bp=p&&p['p'+n];const ok=live&&bp!=null&&bp>0;o['c'+n]=ok?price/bp-1:null;o['g'+n]=ok?qty*(price-bp):null;});
+    o.cbuy=cost?pl/cost:null;o.gbuy=pl;
     return o;
   });
   const m=new Map(H.map(h=>[h.share,h]));const now=Date.now();
@@ -164,7 +165,7 @@ function render(){
   const T={cost:sum(H,h=>h.cost),value:sum(H,h=>h.value)};T.pl=T.value-T.cost;
   const lt=sum(H,h=>h.lt_pl),stp=sum(H,h=>h.st_pl),gain=H.filter(h=>h.pl>0).length,loss=H.filter(h=>h.pl<0).length,fresh=H.filter(h=>h.asof==='Live').length,stale=H.length-fresh;
   $('banner').replaceChildren();
-  if(!liveOk&&loadedAt){$('banner').append(el('div','banner','Live prices could not be loaded, so this page is showing the last saved prices. Check your internet and press Refresh prices. (Reason: '+lastErr+' · page version 6)'));}
+  if(!liveOk&&loadedAt){$('banner').append(el('div','banner','Live prices could not be loaded, so this page is showing the last saved prices. Check your internet and press Refresh prices. (Reason: '+lastErr+' · page version 7)'));}
   const tk=$('takeaway');tk.replaceChildren('The portfolio is ',el('b','',T.pl>=0?'up':'down'),' ',el('b','',inr(Math.abs(T.pl))),' (',el('b','',pc(Math.abs(T.pl/T.cost))),') on ',el('b','',inr(T.cost)),' invested: ',el('b','',gain),' shares are in profit and ',el('b','',loss),' are in loss.');
   $('stamp').textContent=loadedAt?'Prices loaded at '+loadedAt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'';
   const cards=[['Invested',inr(T.cost),''],['Current value',inr(T.value),''],['Net profit / loss',inr(T.pl),cls(T.pl)],['Profit / loss %',pc(T.pl/T.cost),cls(T.pl)],['Long-term profit / loss',inr(lt),cls(lt)],['Short-term profit / loss',inr(stp),cls(stp)]];
